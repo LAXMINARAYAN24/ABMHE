@@ -1,0 +1,11 @@
+# Core compute
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image I/O and processing
+opencv-python>=4.7.0
+Pillow>=9.0.0
+numpy>=1.23.0
+
+# Web frontend
+streamlit>=1.30.0
