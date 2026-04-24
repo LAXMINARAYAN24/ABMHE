@@ -13,7 +13,15 @@ A GPU-accelerated image-enhancement library and interactive Streamlit demo that 
 5. [Project Structure](#project-structure)
 6. [Requirements](#requirements)
 7. [Installation](#installation)
+   - [0 — Prerequisites](#0--prerequisites)
+   - [1 — Clone the repository](#1--clone-the-repository)
+   - [2 — Create a virtual environment](#2--create-and-activate-a-virtual-environment-recommended)
+   - [3 — Install dependencies](#3--install-dependencies)
+   - [4 — Verify the installation](#4--verify-the-installation)
 8. [Running the Demo](#running-the-demo)
+   - [Start the app](#start-the-streamlit-app)
+   - [Step-by-step walkthrough](#step-by-step-walkthrough)
+   - [Troubleshooting](#troubleshooting)
 9. [Usage (API)](#usage-api)
 10. [How It Works — Step by Step](#how-it-works--step-by-step)
 11. [RGB Support](#rgb-support)
@@ -112,51 +120,145 @@ ABMHE/
 
 ## Requirements
 
-* Python ≥ 3.10
-* [PyTorch](https://pytorch.org/) ≥ 2.0 (CPU or CUDA)
-* OpenCV (`opencv-python`)
-* Pillow
-* NumPy
-* Streamlit ≥ 1.30
+| Dependency | Minimum version | Notes |
+|---|---|---|
+| Python | 3.10 | `python --version` to check |
+| PyTorch | 2.0 | CPU or CUDA wheel |
+| torchvision | 0.15 | Installed alongside PyTorch |
+| opencv-python | 4.7 | Used for GHE and CLAHE |
+| Pillow | 9.0 | Image I/O |
+| NumPy | 1.23 | Array utilities |
+| Streamlit | 1.30 | Web frontend |
 
 ---
 
 ## Installation
 
+### 0 — Prerequisites
+
+Make sure Python 3.10+ is installed:
+
 ```bash
-# 1. Clone the repository
-git clone https://github.com/LAXMINARAYAN24/ABMHE.git
-cd ABMHE
-
-# 2. (Recommended) create a virtual environment
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# 3. Install dependencies
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install opencv-python pillow numpy streamlit
+python --version   # must print Python 3.10.x or higher
+pip --version
 ```
 
-For GPU acceleration install the CUDA-enabled PyTorch wheel matching your CUDA version from https://pytorch.org/get-started/locally/.
+If Python is missing, download it from https://www.python.org/downloads/ or use your OS package manager (e.g. `sudo apt install python3.11`).
+
+### 1 — Clone the repository
+
+```bash
+git clone https://github.com/LAXMINARAYAN24/ABMHE.git
+cd ABMHE
+```
+
+### 2 — Create and activate a virtual environment (recommended)
+
+```bash
+# Linux / macOS
+python -m venv .venv
+source .venv/bin/activate
+
+# Windows (Command Prompt)
+python -m venv .venv
+.venv\Scripts\activate.bat
+
+# Windows (PowerShell)
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+Your prompt should now show `(.venv)`.
+
+### 3 — Install dependencies
+
+**CPU-only (works on any machine):**
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+```
+
+**CUDA (GPU acceleration):**
+
+Find the correct install command for your CUDA version at https://pytorch.org/get-started/locally/, for example for CUDA 12.1:
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+### 4 — Verify the installation
+
+```bash
+python - <<'EOF'
+import torch, cv2, streamlit, PIL
+print("PyTorch :", torch.__version__)
+print("OpenCV  :", cv2.__version__)
+print("Streamlit:", streamlit.__version__)
+print("CUDA available:", torch.cuda.is_available())
+EOF
+```
+
+Expected output (versions may differ):
+
+```
+PyTorch : 2.x.x
+OpenCV  : 4.x.x
+Streamlit: 1.x.x
+CUDA available: False   # True if a CUDA GPU is present
+```
 
 ---
 
 ## Running the Demo
 
+### Start the Streamlit app
+
 ```bash
 streamlit run frontend.py
 ```
 
-Then open the URL printed in the terminal (default: http://localhost:8501).
+Streamlit will print something like:
 
-### Workflow
+```
+  You can now view your Streamlit app in your browser.
 
-1. **Upload** a PNG, JPEG, BMP, or TIFF image using the file uploader.
-2. In the **sidebar**, choose a single enhancement method from the dropdown.
-3. Click **Run single** to see a side-by-side comparison with NRSS and Local Contrast scores.
-4. Click **Run all** to run every method at once and display a comparison grid plus a metrics table.
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.x.x:8501
+```
 
-For colour images, two additional RGB modes appear: *ABMHE RGB (per-channel)* and *ABMHE RGB (YCbCr-Y)*.
+Open **http://localhost:8501** in your browser. If the page does not open automatically, copy the URL from the terminal.
+
+> **Note:** Keep the terminal open while using the app. Press `Ctrl+C` to stop the server.
+
+### Step-by-step walkthrough
+
+| Step | What to do |
+|---|---|
+| 1 | Click **Browse files** (or drag and drop) to upload a PNG, JPEG, BMP, or TIFF image. |
+| 2 | The sidebar on the left shows a **Settings** panel once an image is loaded. |
+| 3 | Use the **Single method** dropdown to pick one algorithm: ABMHE, GHE, BBHE, CLAHE, or POSHE. For colour images, two additional RGB modes also appear. |
+| 4 | Click **Run single** (blue button) to enhance the image with the chosen method. A side-by-side view of the original and enhanced image is shown, along with NRSS and Local Contrast scores. |
+| 5 | Click **Run all** (grey button) to run every available method at once. The result is a comparison grid and a metrics table so you can evaluate all methods side by side. |
+
+### Custom port or host
+
+```bash
+streamlit run frontend.py --server.port 8080
+streamlit run frontend.py --server.address 0.0.0.0   # expose on the local network
+```
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `ModuleNotFoundError: No module named 'streamlit'` | Dependencies not installed | Re-run the install step and ensure the virtualenv is activated |
+| `ModuleNotFoundError: No module named 'cv2'` | OpenCV missing | `pip install opencv-python` |
+| App loads but processing is very slow | Running on CPU with a large image | Resize image to ≤ 1 MP before uploading, or use a CUDA GPU |
+| `RuntimeError: CUDA out of memory` | Image too large for GPU VRAM | Reduce image resolution or process on CPU |
+| Browser shows blank page | Streamlit not fully started yet | Wait a few seconds and refresh |
+| Port 8501 already in use | Another Streamlit instance running | Use `--server.port 8080` or kill the other process |
 
 ---
 
